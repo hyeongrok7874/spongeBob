@@ -1,26 +1,374 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="view">
+    <div v-if="!registration" class="school-search">
+      <h1 class="title">스폰지 '밥'</h1>
+      <div class="search-wrap">
+        <input
+          v-model="keyword"
+          class="school-input"
+          placeholder="학교 이름을 입력해주세요"
+        />
+        <button @click="search" class="school-button">검색</button>
+      </div>
+      <div class="result-wrap">
+        <div
+          class="result"
+          v-for="(school, index) in schoolList"
+          :key="index"
+          @click="register(school)"
+        >
+          <div class="result-name">{{ school.SCHUL_NM }}</div>
+          <div class="result-address">{{ school.ORG_RDNMA }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="main-wrap" v-else>
+      <p class="school-name">{{ schoolName }}</p>
+      <p class="timing">{{ timing }}</p>
+      <div class="menu-wrap">
+        <a
+          v-for="(menu, index) in meal"
+          :key="index"
+          class="menu"
+          :href="returnURL(menu)"
+        >
+          {{ menu }}
+        </a>
+      </div>
+    </div>
+  </div>
+  <div
+    class="circle"
+    v-for="(_, i) in 100"
+    :key="i"
+    :style="circlePosition()"
+  ></div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import axios from "axios";
 
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+  name: "App",
+  data() {
+    return {
+      registration: false,
+      keyword: "",
+      schoolName: "",
+      schoolList: [],
+      ATPT_OFCDC_SC_CODE: "",
+      SD_SCHUL_CODE: "",
+      meal: [],
+      timing: "",
+    };
+  },
+  methods: {
+    register(school) {
+      localStorage.setItem("ATPT_OFCDC_SC_CODE", school.ATPT_OFCDC_SC_CODE);
+      localStorage.setItem("SD_SCHUL_CODE", school.SD_SCHUL_CODE);
+      window.location.reload();
+    },
+    registerCheck() {
+      this.registration =
+        localStorage.getItem("ATPT_OFCDC_SC_CODE") &&
+        localStorage.getItem("SD_SCHUL_CODE")
+          ? true
+          : false;
+      this.ATPT_OFCDC_SC_CODE = localStorage.getItem("ATPT_OFCDC_SC_CODE");
+      this.SD_SCHUL_CODE = localStorage.getItem("SD_SCHUL_CODE");
+      console.log(this.registration);
+    },
+    circlePosition() {
+      const innerWidth = window.innerWidth;
+      const innerHeight = window.innerHeight;
+      const leftRand = Math.random() * innerWidth;
+      const topRand = Math.random() * innerHeight;
+      const size = Math.random() * 100;
+      return {
+        width: `${size}px`,
+        height: `${size}px`,
+        left: `${leftRand}px`,
+        top: `${topRand}px`,
+      };
+    },
+    async search() {
+      try {
+        const {
+          data: {
+            schoolInfo: {
+              [1]: { row },
+            },
+          },
+        } = await axios.get(
+          `https://open.neis.go.kr/hub/schoolInfo?KEY=${process.env.VUE_APP_NEIS_API_KEY}&Type=json&SCHUL_NM=${this.keyword}`
+        );
+        this.schoolList = row;
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    async getMeal() {
+      const today = this.getToday();
+      try {
+        const {
+          data: {
+            mealServiceDietInfo: {
+              [1]: { row },
+            },
+          },
+        } = await axios.get(
+          `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${process.env.VUE_APP_NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${this.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${this.SD_SCHUL_CODE}&MLSV_YMD=${today}`
+        );
+        const now = new Date();
+        let morning = "";
+        let lunch = "";
+        let dinner = "";
+        for (const info of row) {
+          const meal = info.MMEAL_SC_NM;
+          switch (meal) {
+            case "조식":
+              morning = info.DDISH_NM;
+              break;
+            case "중식":
+              lunch = info.DDISH_NM;
+              this.timing = meal;
+              break;
+            case "석식":
+              dinner = info.DDISH_NM;
+              this.timing = meal;
+              break;
+          }
+        }
+        if (now.getHours() > 13) {
+          this.meal = dinner || lunch || morning;
+        } else if (now.getHours() > 8) {
+          this.meal = lunch || dinner || morning;
+        } else {
+          this.meal = morning || dinner || lunch;
+        }
+        switch (this.meal) {
+          case morning:
+            this.timing = "조식";
+            break;
+          case lunch:
+            this.timing = "중식";
+            break;
+          case dinner:
+            this.timing = "석식";
+            break;
+        }
+        console.log(row);
+        this.meal = this.toArray(
+          this.cleanString(this.removeBracket(this.meal))
+        );
+        this.schoolName = row[0].SCHUL_NM;
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    toArray(meal) {
+      return meal.split("<br/>");
+    },
+    getToday() {
+      const date = new Date();
+      const year = date.getFullYear();
+      const month = ("0" + (1 + date.getMonth())).slice(-2);
+      const day = ("0" + date.getDate()).slice(-2);
+
+      return year + month + day;
+    },
+    removeBracket(menu) {
+      let result = "";
+      let stack = [];
+      let str = [];
+
+      for (let character of menu) {
+        stack.push(character);
+      }
+
+      for (let i = 0; i < menu.length; i++) {
+        let temp = stack.pop();
+
+        if (temp === "(") {
+          while (str.pop() !== ")") {
+            console.log();
+          }
+        } else {
+          str.push(temp);
+        }
+      }
+
+      result = str.reverse().join("");
+
+      return result;
+    },
+    cleanString(meal) {
+      return meal.replace(/[*, .]/g, "");
+    },
+    returnURL(menu) {
+      return "https://www.google.com/search?q=" + menu;
+    },
+  },
+  mounted() {
+    this.registerCheck();
+    this.getMeal();
+  },
+};
 </script>
 
 <style>
+@font-face {
+  font-family: "CookieRun-Regular";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Regular.woff")
+    format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: "CookieRun-Regular", "Noto Sans KR", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  display: flex;
+  justify-content: center;
+  background: #fff75f;
+  position: relative;
+  overflow: hidden;
+}
+
+.view {
+  width: 500px;
+  height: 100vh;
+  background: white;
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.title {
+  font-size: 30px;
+}
+.school-search {
+  width: 100%;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.search-wrap {
+  width: 400px;
+  height: 110px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.school-input {
+  width: 100%;
+  height: 50px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 10px;
+  font-size: 20px;
+  padding: 0 10px;
+  border: 1px black solid;
+}
+
+.school-button {
+  width: 100%;
+  height: 50px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 10px;
+  background: black;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.result-wrap {
+  width: 80%;
+  height: 300px;
+  overflow-y: scroll;
+  position: relative;
+}
+
+.result {
+  width: 100%;
+  height: 50px;
+  background: #40b3d2;
+  color: black;
+  margin: 10px 0;
+  border-radius: 30px;
+  padding: 0 20px;
+  cursor: pointer;
+}
+
+.result-name {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.result-address {
+  font-size: 15px;
+}
+
+.main-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.school-name {
+  font-size: 30px;
+}
+
+.timing {
+  font-size: 25px;
+  margin: 10px 0;
+}
+
+.menu-wrap {
+  width: 80%;
+}
+
+.menu {
+  width: 100%;
+  height: 50px;
+  background: #40b3d2;
+  margin: 10px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  border-radius: 30px;
+  text-decoration: none;
+  color: black;
+}
+
+.circle {
+  position: absolute;
+  border-radius: 100%;
+  background: #b2c036;
+  z-index: 2;
 }
 </style>
