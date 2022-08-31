@@ -144,7 +144,7 @@ export default {
         } else if (now.getHours() > 8) {
           this.meal = lunch || dinner || morning;
         } else {
-          this.meal = morning || dinner || lunch;
+          this.meal = morning || lunch || dinner;
         }
         switch (this.meal) {
           case morning:
