@@ -139,9 +139,9 @@ export default {
               break;
           }
         }
-        if (now.getHours() > 13) {
+        if (now.getHours() >= 13) {
           this.meal = dinner || lunch || morning;
-        } else if (now.getHours() > 8) {
+        } else if (now.getHours() >= 8) {
           this.meal = lunch || dinner || morning;
         } else {
           this.meal = morning || lunch || dinner;
