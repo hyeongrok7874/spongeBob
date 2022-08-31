@@ -25,6 +25,10 @@
     </div>
     <div class="main-wrap" v-else>
       <p class="school-name">{{ schoolName }}</p>
+      <p class="today">
+        {{ parseInt(today.substring(4, 6)) }}월
+        {{ parseInt(today.substring(6, 8)) }}일
+      </p>
       <p class="timing">{{ timing }}</p>
       <div class="menu-wrap">
         <a
@@ -61,6 +65,7 @@ export default {
       SD_SCHUL_CODE: "",
       meal: [],
       timing: "",
+      today: "",
     };
   },
   methods: {
@@ -106,7 +111,6 @@ export default {
       }
     },
     async getMeal() {
-      const today = this.getToday();
       try {
         const {
           data: {
@@ -115,7 +119,7 @@ export default {
             },
           },
         } = await axios.get(
-          `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${process.env.VUE_APP_NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${this.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${this.SD_SCHUL_CODE}&MLSV_YMD=${today}`
+          `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${process.env.VUE_APP_NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${this.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${this.SD_SCHUL_CODE}&MLSV_YMD=${this.today}`
         );
         const now = new Date();
         let morning = "";
@@ -155,6 +159,7 @@ export default {
         }
         this.meal = this.toArray(this.removeBracket(this.meal));
         this.schoolName = row[0].SCHUL_NM;
+        console.log(row);
       } catch (e) {
         console.log(e);
       }
@@ -172,7 +177,7 @@ export default {
       const month = ("0" + (1 + date.getMonth())).slice(-2);
       const day = ("0" + date.getDate()).slice(-2);
 
-      return year + month + day;
+      this.today = year + month + day;
     },
     removeBracket(menu) {
       let result = "";
@@ -208,6 +213,7 @@ export default {
     },
   },
   mounted() {
+    this.getToday();
     this.registerCheck();
     this.getMeal();
   },
@@ -332,7 +338,6 @@ body {
 
 .main-wrap {
   width: 100%;
-  height: 600px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -341,6 +346,11 @@ body {
 
 .school-name {
   font-size: 30px;
+}
+
+.today {
+  font-size: 20px;
+  margin: 10px 0;
 }
 
 .timing {
@@ -375,6 +385,7 @@ body {
   color: white;
   font-size: 20px;
   cursor: pointer;
+  margin-top: 20px;
 }
 
 .circle {
