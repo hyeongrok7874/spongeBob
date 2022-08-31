@@ -36,6 +36,7 @@
           {{ menu }}
         </a>
       </div>
+      <button class="change-school" @click="resetSchool">학교 변경</button>
     </div>
   </div>
   <div
@@ -152,16 +153,18 @@ export default {
             this.timing = "석식";
             break;
         }
-        this.meal = this.toArray(
-          this.cleanString(this.removeBracket(this.meal))
-        );
+        this.meal = this.toArray(this.removeBracket(this.meal));
         this.schoolName = row[0].SCHUL_NM;
       } catch (e) {
         console.log(e);
       }
     },
     toArray(meal) {
-      return meal.split("<br/>");
+      let array = [];
+      for (const item of meal.replace(/[*, .]/g, "").split("<br/>")) {
+        array.push(item.replace(/^[^가-힣]/g, "").replace(/[^가-힣]$/g, ""));
+      }
+      return array;
     },
     getToday() {
       const date = new Date();
@@ -196,11 +199,12 @@ export default {
 
       return result;
     },
-    cleanString(meal) {
-      return meal.replace(/[*, .]/g, "");
-    },
     returnURL(menu) {
       return "https://www.google.com/search?q=" + menu;
+    },
+    resetSchool() {
+      localStorage.clear();
+      window.location.reload();
     },
   },
   mounted() {
@@ -228,6 +232,7 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: "CookieRun-Regular", "Noto Sans KR", sans-serif;
 }
 
 #app {
@@ -327,9 +332,11 @@ body {
 
 .main-wrap {
   width: 100%;
+  height: 600px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between;
 }
 
 .school-name {
@@ -357,6 +364,17 @@ body {
   border-radius: 30px;
   text-decoration: none;
   color: black;
+}
+
+.change-school {
+  width: 100px;
+  height: 100px;
+  border-radius: 100%;
+  border: none;
+  background: #eb1d36;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
 }
 
 .circle {
