@@ -4,9 +4,10 @@
       <h1 class="title">스폰지 '밥'</h1>
       <div class="search-wrap">
         <input
-          v-model="keyword"
           class="school-input"
           placeholder="학교 이름을 입력해주세요"
+          ref="schoolInput"
+          @keyup.enter="search"
         />
         <button @click="search" class="school-button">검색</button>
       </div>
@@ -53,7 +54,6 @@ export default {
   data() {
     return {
       registration: false,
-      keyword: "",
       schoolName: "",
       schoolList: [],
       ATPT_OFCDC_SC_CODE: "",
@@ -69,14 +69,10 @@ export default {
       window.location.reload();
     },
     registerCheck() {
-      this.registration =
-        localStorage.getItem("ATPT_OFCDC_SC_CODE") &&
-        localStorage.getItem("SD_SCHUL_CODE")
-          ? true
-          : false;
       this.ATPT_OFCDC_SC_CODE = localStorage.getItem("ATPT_OFCDC_SC_CODE");
       this.SD_SCHUL_CODE = localStorage.getItem("SD_SCHUL_CODE");
-      console.log(this.registration);
+      this.registration =
+        this.ATPT_OFCDC_SC_CODE && this.SD_SCHUL_CODE ? true : false;
     },
     circlePosition() {
       const innerWidth = window.innerWidth;
@@ -92,6 +88,7 @@ export default {
       };
     },
     async search() {
+      const name = this.$refs.schoolInput.value;
       try {
         const {
           data: {
@@ -100,7 +97,7 @@ export default {
             },
           },
         } = await axios.get(
-          `https://open.neis.go.kr/hub/schoolInfo?KEY=${process.env.VUE_APP_NEIS_API_KEY}&Type=json&SCHUL_NM=${this.keyword}`
+          `https://open.neis.go.kr/hub/schoolInfo?KEY=${process.env.VUE_APP_NEIS_API_KEY}&Type=json&SCHUL_NM=${name}`
         );
         this.schoolList = row;
       } catch (e) {
@@ -131,11 +128,9 @@ export default {
               break;
             case "중식":
               lunch = info.DDISH_NM;
-              this.timing = meal;
               break;
             case "석식":
               dinner = info.DDISH_NM;
-              this.timing = meal;
               break;
           }
         }
@@ -157,7 +152,6 @@ export default {
             this.timing = "석식";
             break;
         }
-        console.log(row);
         this.meal = this.toArray(
           this.cleanString(this.removeBracket(this.meal))
         );
