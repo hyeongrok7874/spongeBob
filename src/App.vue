@@ -175,6 +175,7 @@ export default {
         }
         this.meal = this.toArray(this.removeBracket(this.meal));
         this.isLoading = false;
+        this.schoolName = row[0].SCHUL_NM;
       } catch (e) {
         console.log(e);
         this.isLoading = false;
