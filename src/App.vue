@@ -11,12 +11,17 @@
         />
         <button @click="search" class="school-button">검색</button>
       </div>
-      <div class="result-wrap">
+      <div class="school-not-exist" v-if="schoolsNotExist">
+        검색을 실패 했습니다.
+      </div>
+      <div class="result-wrap" v-else>
+        <div class="is-loading" v-if="isLoading">잠시만요...</div>
         <div
           class="result"
           v-for="(school, index) in schoolList"
           :key="index"
           @click="register(school)"
+          v-else
         >
           <div class="result-name">{{ school.SCHUL_NM }}</div>
           <div class="result-address">{{ school.ORG_RDNMA }}</div>
@@ -43,19 +48,18 @@
       <button class="change-school" @click="resetSchool">학교 변경</button>
     </div>
   </div>
-  <div
-    class="circle"
-    v-for="(_, i) in 100"
-    :key="i"
-    :style="circlePosition()"
-  ></div>
+  <BackgroundPattern />
 </template>
 
 <script>
 import axios from "axios";
+import BackgroundPattern from "./components/BackgroundPattern.vue";
 
 export default {
   name: "App",
+  components: {
+    BackgroundPattern,
+  },
   data() {
     return {
       registration: false,
@@ -66,6 +70,8 @@ export default {
       meal: [],
       timing: "",
       today: "",
+      isLoading: false,
+      schoolsNotExist: false,
     };
   },
   methods: {
@@ -95,6 +101,7 @@ export default {
     },
     async search() {
       const name = this.$refs.schoolInput.value;
+      this.isLoading = true;
       try {
         const {
           data: {
@@ -106,8 +113,12 @@ export default {
           `https://open.neis.go.kr/hub/schoolInfo?KEY=${process.env.VUE_APP_NEIS_API_KEY}&Type=json&SCHUL_NM=${name}`
         );
         this.schoolList = row;
+        this.schoolsNotExist = false;
+        this.isLoading = false;
       } catch (e) {
         console.log(e);
+        this.isLoading = false;
+        this.schoolsNotExist = true;
       }
     },
     async getMeal() {
@@ -393,5 +404,18 @@ body {
   border-radius: 100%;
   background: #b2c036;
   z-index: 2;
+}
+
+.is-loading {
+  width: 100%;
+  text-align: center;
+  margin-top: 50px;
+  font-size: 30px;
+}
+
+.school-not-exist {
+  height: 300px;
+  padding-top: 50px;
+  font-size: 30px;
 }
 </style>
