@@ -35,12 +35,15 @@
         {{ parseInt(today.substring(6, 8)) }}일
       </p>
       <p class="timing">{{ timing }}</p>
-      <div class="menu-wrap">
+      <div class="is-loading" v-if="isLoading">잠시만요...</div>
+      <div class="menu-wrap" v-else>
         <a
           v-for="(menu, index) in meal"
           :key="index"
           class="menu"
           :href="returnURL(menu)"
+          target="_blank"
+          rel="noopener noreferrer"
         >
           {{ menu }}
         </a>
@@ -78,6 +81,7 @@ export default {
     register(school) {
       localStorage.setItem("ATPT_OFCDC_SC_CODE", school.ATPT_OFCDC_SC_CODE);
       localStorage.setItem("SD_SCHUL_CODE", school.SD_SCHUL_CODE);
+      localStorage.setItem("schoolName", school.SCHUL_NM);
       window.location.reload();
     },
     registerCheck() {
@@ -123,6 +127,7 @@ export default {
     },
     async getMeal() {
       try {
+        this.isLoading = true;
         const {
           data: {
             mealServiceDietInfo: {
@@ -169,10 +174,10 @@ export default {
             break;
         }
         this.meal = this.toArray(this.removeBracket(this.meal));
-        this.schoolName = row[0].SCHUL_NM;
-        console.log(row);
+        this.isLoading = false;
       } catch (e) {
         console.log(e);
+        this.isLoading = false;
       }
     },
     toArray(meal) {
@@ -224,6 +229,7 @@ export default {
     },
   },
   mounted() {
+    this.schoolName = localStorage.getItem("schoolName") ?? "";
     this.getToday();
     this.registerCheck();
     this.getMeal();
