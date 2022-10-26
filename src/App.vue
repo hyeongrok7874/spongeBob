@@ -285,6 +285,7 @@ body {
 .title {
   font-size: 30px;
 }
+
 .school-search {
   width: 100%;
   height: 500px;
@@ -334,6 +335,15 @@ body {
   position: relative;
 }
 
+.result-wrap::-webkit-scrollbar {
+  width: 10px;
+}
+
+.result-wrap::-webkit-scrollbar-thumb {
+  background: #cbcbcb;
+  border-radius: 7px;
+}
+
 .result {
   width: 100%;
   height: 50px;
@@ -343,15 +353,23 @@ body {
   border-radius: 30px;
   padding: 0 20px;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .result-name {
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
   font-size: 20px;
   font-weight: bold;
 }
 
 .result-address {
   font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .main-wrap {
@@ -424,5 +442,26 @@ body {
   height: 300px;
   padding-top: 50px;
   font-size: 30px;
+}
+
+@media (max-width: 400px) {
+  .school-name {
+    font-size: 23px;
+  }
+  .menu {
+    font-size: 17px;
+  }
+  .view {
+    width: 100%;
+  }
+  .search-wrap {
+    width: 90%;
+  }
+  .result-name {
+    font-size: 17px;
+  }
+  .result-address {
+    font-size: 12px;
+  }
 }
 </style>
