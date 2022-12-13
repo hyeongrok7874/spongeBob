@@ -47,6 +47,7 @@
         >
           {{ menu }}
         </a>
+        <p v-if="mealNotExist" class="nobab">오늘은 밥이 없네요..</p>
       </div>
       <button class="change-school" @click="resetSchool">학교 변경</button>
     </div>
@@ -75,6 +76,7 @@ export default {
       today: "",
       isLoading: false,
       schoolsNotExist: false,
+      mealNotExist: true,
     };
   },
   methods: {
@@ -137,6 +139,7 @@ export default {
         } = await axios.get(
           `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${process.env.VUE_APP_NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${this.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${this.SD_SCHUL_CODE}&MLSV_YMD=${this.today}`
         );
+        this.mealNotExist = row ? false : true;
         const now = new Date();
         let morning = "";
         let lunch = "";
@@ -442,6 +445,12 @@ body {
   height: 300px;
   padding-top: 50px;
   font-size: 30px;
+}
+
+.nobab {
+  text-align: center;
+  font-size: 30px;
+  margin: 100px 0;
 }
 
 @media (max-width: 400px) {
