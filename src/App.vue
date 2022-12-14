@@ -162,11 +162,26 @@ export default {
           }
         }
         if (now.getHours() >= 13) {
-          this.meal = this.dinner || this.lunch || this.morning;
+          this.meal =
+            this.dinner.length > 0
+              ? this.dinner
+              : this.lunch.length > 0
+              ? this.lunch
+              : this.morning;
         } else if (now.getHours() >= 8) {
-          this.meal = this.lunch || this.dinner || this.morning;
+          this.meal =
+            this.lunch.length > 0
+              ? this.lunch
+              : this.dinner > 0
+              ? this.dinner
+              : this.morning;
         } else {
-          this.meal = this.morning || this.lunch || this.dinner;
+          this.meal =
+            this.morning.length > 0
+              ? this.morning
+              : this.lunch.length > 0
+              ? this.lunch
+              : this.dinner;
         }
         switch (this.meal) {
           case this.morning:
