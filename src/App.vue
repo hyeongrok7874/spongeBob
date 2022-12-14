@@ -52,18 +52,18 @@
       <button class="change-school" @click="resetSchool">학교 변경</button>
     </div>
     <button
-      class="material-symbols-outlined prev-button"
+      class="button prev-button"
       @click="prevMeal"
       v-if="registration && !isLoading"
     >
-      arrow_back_ios
+      <img src="./assets/prevButton.svg" alt="prev" />
     </button>
     <button
-      class="material-symbols-outlined next-button"
+      class="button next-button"
       @click="nextMeal"
       v-if="registration && !isLoading"
     >
-      arrow_forward_ios
+      <img src="./assets/nextButton.svg" alt="next" />
     </button>
   </div>
   <BackgroundPattern />
@@ -551,30 +551,39 @@ body {
   margin: 100px 0;
 }
 
-.next-button {
+.button {
   position: absolute;
-  right: 0;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  padding: 10px;
   background: inherit;
   border: none;
   cursor: pointer;
+  padding: 10px;
+}
+
+.button > img {
+  width: 30px;
+  height: 30px;
+}
+
+.next-button {
+  right: 0;
 }
 
 .prev-button {
-  position: absolute;
   left: 0;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  padding: 10px;
-  background: inherit;
-  border: none;
-  cursor: pointer;
+}
+
+@media (max-width: 500px) {
+  .button {
+    padding: 7px;
+  }
+  .button > img {
+    width: 25px;
+    height: 25px;
+  }
 }
 
 @media (max-width: 400px) {
@@ -595,6 +604,13 @@ body {
   }
   .result-address {
     font-size: 12px;
+  }
+  .button {
+    padding: 4px;
+  }
+  .button > img {
+    width: 20px;
+    height: 20px;
   }
 }
 </style>
