@@ -34,9 +34,9 @@
         {{ parseInt(today.substring(4, 6)) }}월
         {{ parseInt(today.substring(6, 8)) }}일
       </p>
-      <p class="timing">{{ timing }}</p>
+      <p class="timing" v-if="mealExist">{{ timing }}</p>
       <div class="is-loading" v-if="isLoading">잠시만요...</div>
-      <div class="menu-wrap" v-else>
+      <div class="menu-wrap" v-if="mealExist && !isLoading">
         <a
           v-for="(menu, index) in meal"
           :key="index"
@@ -47,10 +47,24 @@
         >
           {{ menu }}
         </a>
-        <p v-if="mealNotExist" class="nobab">오늘은 밥이 없네요..</p>
       </div>
+      <p v-else-if="!isLoading" class="nobab">오늘은 밥이 없네요..</p>
       <button class="change-school" @click="resetSchool">학교 변경</button>
     </div>
+    <button
+      class="material-symbols-outlined prev-button"
+      @click="prevMeal"
+      v-if="registration && !isLoading"
+    >
+      arrow_back_ios
+    </button>
+    <button
+      class="material-symbols-outlined next-button"
+      @click="nextMeal"
+      v-if="registration && !isLoading"
+    >
+      arrow_forward_ios
+    </button>
   </div>
   <BackgroundPattern />
 </template>
@@ -71,12 +85,15 @@ export default {
       schoolList: [],
       ATPT_OFCDC_SC_CODE: "",
       SD_SCHUL_CODE: "",
+      morning: [],
+      lunch: [],
+      dinner: [],
       meal: [],
       timing: "",
       today: "",
       isLoading: false,
       schoolsNotExist: false,
-      mealNotExist: true,
+      mealExist: false,
     };
   },
   methods: {
@@ -122,7 +139,6 @@ export default {
         this.schoolsNotExist = false;
         this.isLoading = false;
       } catch (e) {
-        console.log(e);
         this.isLoading = false;
         this.schoolsNotExist = true;
       }
@@ -139,48 +155,44 @@ export default {
         } = await axios.get(
           `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${process.env.VUE_APP_NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${this.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${this.SD_SCHUL_CODE}&MLSV_YMD=${this.today}`
         );
-        this.mealNotExist = row ? false : true;
+        this.mealExist = row ? true : false;
         const now = new Date();
-        let morning = "";
-        let lunch = "";
-        let dinner = "";
         for (const info of row) {
           const meal = info.MMEAL_SC_NM;
           switch (meal) {
             case "조식":
-              morning = info.DDISH_NM;
+              this.morning = this.toArray(this.removeBracket(info.DDISH_NM));
               break;
             case "중식":
-              lunch = info.DDISH_NM;
+              this.lunch = this.toArray(this.removeBracket(info.DDISH_NM));
               break;
             case "석식":
-              dinner = info.DDISH_NM;
+              this.dinner = this.toArray(this.removeBracket(info.DDISH_NM));
               break;
           }
         }
         if (now.getHours() >= 13) {
-          this.meal = dinner || lunch || morning;
+          this.meal = this.dinner || this.lunch || this.morning;
         } else if (now.getHours() >= 8) {
-          this.meal = lunch || dinner || morning;
+          this.meal = this.lunch || this.dinner || this.morning;
         } else {
-          this.meal = morning || lunch || dinner;
+          this.meal = this.morning || this.lunch || this.dinner;
         }
         switch (this.meal) {
-          case morning:
+          case this.morning:
             this.timing = "조식";
             break;
-          case lunch:
+          case this.lunch:
             this.timing = "중식";
             break;
-          case dinner:
+          case this.dinner:
             this.timing = "석식";
             break;
         }
-        this.meal = this.toArray(this.removeBracket(this.meal));
         this.isLoading = false;
         this.schoolName = row[0].SCHUL_NM;
       } catch (e) {
-        console.log(e);
+        this.mealExist = false;
         this.isLoading = false;
       }
     },
@@ -230,6 +242,96 @@ export default {
     resetSchool() {
       localStorage.clear();
       window.location.reload();
+    },
+    prevMeal() {
+      switch (this.timing) {
+        case "조식":
+          this.notExistPrevMeal();
+          break;
+        case "중식":
+          this.morning
+            ? ((this.meal = this.morning), (this.timing = "조식"))
+            : this.notExistPrevMeal();
+          break;
+        case "석식":
+          this.lunch
+            ? ((this.meal = this.lunch), (this.timing = "중식"))
+            : this.notExistPrevMeal();
+          break;
+      }
+    },
+    nextMeal() {
+      switch (this.timing) {
+        case "조식":
+          this.lunch
+            ? ((this.meal = this.lunch), (this.timing = "중식"))
+            : this.notExistNextMeal();
+          break;
+        case "중식":
+          this.dinner
+            ? ((this.meal = this.dinner), (this.timing = "석식"))
+            : this.notExistNextMeal();
+          break;
+        case "석식":
+          this.notExistNextMeal();
+          break;
+      }
+    },
+    notExistPrevMeal() {
+      this.today = (parseInt(this.today) - 1).toString();
+      this.getNewMeal();
+    },
+    notExistNextMeal() {
+      this.today = (parseInt(this.today) + 1).toString();
+      this.getNewMeal();
+    },
+    async getNewMeal() {
+      try {
+        this.isLoading = true;
+        const {
+          data: {
+            mealServiceDietInfo: {
+              [1]: { row },
+            },
+          },
+        } = await axios.get(
+          `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${process.env.VUE_APP_NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${this.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${this.SD_SCHUL_CODE}&MLSV_YMD=${this.today}`
+        );
+        this.mealExist = row ? true : false;
+        this.morning = "";
+        this.lunch = "";
+        this.dinner = "";
+        for (const info of row) {
+          const meal = info.MMEAL_SC_NM;
+          switch (meal) {
+            case "조식":
+              this.morning = this.toArray(this.removeBracket(info.DDISH_NM));
+              break;
+            case "중식":
+              this.lunch = this.toArray(this.removeBracket(info.DDISH_NM));
+              break;
+            case "석식":
+              this.dinner = this.toArray(this.removeBracket(info.DDISH_NM));
+              break;
+          }
+        }
+        this.meal = this.morning || this.lunch || this.dinner;
+        switch (this.meal) {
+          case this.morning:
+            this.timing = "조식";
+            break;
+          case this.lunch:
+            this.timing = "중식";
+            break;
+          case this.dinner:
+            this.timing = "석식";
+            break;
+        }
+        this.isLoading = false;
+      } catch (e) {
+        this.mealExist = false;
+        this.isLoading = false;
+      }
     },
   },
   mounted() {
@@ -451,6 +553,32 @@ body {
   text-align: center;
   font-size: 30px;
   margin: 100px 0;
+}
+
+.next-button {
+  position: absolute;
+  right: 0;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  padding: 10px;
+  background: inherit;
+  border: none;
+  cursor: pointer;
+}
+
+.prev-button {
+  position: absolute;
+  left: 0;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  padding: 10px;
+  background: inherit;
+  border: none;
+  cursor: pointer;
 }
 
 @media (max-width: 400px) {
