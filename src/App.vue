@@ -109,19 +109,6 @@ export default {
       this.registration =
         this.ATPT_OFCDC_SC_CODE && this.SD_SCHUL_CODE ? true : false;
     },
-    circlePosition() {
-      const innerWidth = window.innerWidth;
-      const innerHeight = window.innerHeight;
-      const leftRand = Math.random() * innerWidth;
-      const topRand = Math.random() * innerHeight;
-      const size = Math.random() * 100;
-      return {
-        width: `${size}px`,
-        height: `${size}px`,
-        left: `${leftRand}px`,
-        top: `${topRand}px`,
-      };
-    },
     async search() {
       const name = this.$refs.schoolInput.value;
       this.isLoading = true;
@@ -157,6 +144,9 @@ export default {
         );
         this.mealExist = row ? true : false;
         const now = new Date();
+        this.morning = [];
+        this.lunch = [];
+        this.dinner = [];
         for (const info of row) {
           const meal = info.MMEAL_SC_NM;
           switch (meal) {
@@ -261,14 +251,15 @@ export default {
       }
     },
     nextMeal() {
+      console.log(this.dinner);
       switch (this.timing) {
         case "조식":
-          this.lunch
+          this.lunch.length
             ? ((this.meal = this.lunch), (this.timing = "중식"))
             : this.notExistNextMeal();
           break;
         case "중식":
-          this.dinner
+          this.dinner.length
             ? ((this.meal = this.dinner), (this.timing = "석식"))
             : this.notExistNextMeal();
           break;
@@ -298,9 +289,9 @@ export default {
           `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${process.env.VUE_APP_NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${this.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${this.SD_SCHUL_CODE}&MLSV_YMD=${this.today}`
         );
         this.mealExist = row ? true : false;
-        this.morning = "";
-        this.lunch = "";
-        this.dinner = "";
+        this.morning = [];
+        this.lunch = [];
+        this.dinner = [];
         for (const info of row) {
           const meal = info.MMEAL_SC_NM;
           switch (meal) {
@@ -315,7 +306,12 @@ export default {
               break;
           }
         }
-        this.meal = this.morning || this.lunch || this.dinner;
+        this.meal =
+          this.morning.length !== 0
+            ? this.morning
+            : this.lunch.length !== 0
+            ? this.lunch
+            : this.dinner;
         switch (this.meal) {
           case this.morning:
             this.timing = "조식";
