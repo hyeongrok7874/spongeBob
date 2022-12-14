@@ -557,7 +557,7 @@ body {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  background: inherit;
+  background: transparent;
   border: none;
   cursor: pointer;
   padding: 10px;
