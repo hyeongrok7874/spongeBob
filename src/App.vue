@@ -183,17 +183,7 @@ export default {
               ? this.lunch
               : this.dinner;
         }
-        switch (this.meal) {
-          case this.morning:
-            this.timing = "조식";
-            break;
-          case this.lunch:
-            this.timing = "중식";
-            break;
-          case this.dinner:
-            this.timing = "석식";
-            break;
-        }
+        this.timingAssign();
         this.isLoading = false;
         this.schoolName = row[0].SCHUL_NM;
       } catch (e) {
@@ -327,21 +317,24 @@ export default {
             : this.lunch.length !== 0
             ? this.lunch
             : this.dinner;
-        switch (this.meal) {
-          case this.morning:
-            this.timing = "조식";
-            break;
-          case this.lunch:
-            this.timing = "중식";
-            break;
-          case this.dinner:
-            this.timing = "석식";
-            break;
-        }
+        this.timingAssign();
         this.isLoading = false;
       } catch (e) {
         this.mealExist = false;
         this.isLoading = false;
+      }
+    },
+    timingAssign() {
+      switch (this.meal) {
+        case this.morning:
+          this.timing = "조식";
+          break;
+        case this.lunch:
+          this.timing = "중식";
+          break;
+        case this.dinner:
+          this.timing = "석식";
+          break;
       }
     },
   },
