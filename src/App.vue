@@ -133,15 +133,7 @@ export default {
     async getMeal() {
       try {
         this.isLoading = true;
-        const {
-          data: {
-            mealServiceDietInfo: {
-              [1]: { row },
-            },
-          },
-        } = await axios.get(
-          `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${process.env.VUE_APP_NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${this.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${this.SD_SCHUL_CODE}&MLSV_YMD=${this.today}`
-        );
+        const row = await this.getMealApi();
         this.mealExist = row ? true : false;
         const now = new Date();
         this.morning = [];
@@ -284,15 +276,7 @@ export default {
     async getNewMeal() {
       try {
         this.isLoading = true;
-        const {
-          data: {
-            mealServiceDietInfo: {
-              [1]: { row },
-            },
-          },
-        } = await axios.get(
-          `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${process.env.VUE_APP_NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${this.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${this.SD_SCHUL_CODE}&MLSV_YMD=${this.today}`
-        );
+        const row = await this.getMealApi();
         this.mealExist = row ? true : false;
         this.morning = [];
         this.lunch = [];
@@ -335,6 +319,23 @@ export default {
         case this.dinner:
           this.timing = "석식";
           break;
+      }
+    },
+    async getMealApi() {
+      try {
+        const {
+          data: {
+            mealServiceDietInfo: {
+              [1]: { row },
+            },
+          },
+        } = await axios.get(
+          `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${process.env.VUE_APP_NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${this.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${this.SD_SCHUL_CODE}&MLSV_YMD=${this.today}`
+        );
+
+        return row;
+      } catch (e) {
+        console.log(e);
       }
     },
   },
