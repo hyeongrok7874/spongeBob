@@ -133,26 +133,11 @@ export default {
     async getMeal() {
       try {
         this.isLoading = true;
+        this.initMeals();
+        const now = new Date();
         const row = await this.getMealApi();
         this.mealExist = row ? true : false;
-        const now = new Date();
-        this.morning = [];
-        this.lunch = [];
-        this.dinner = [];
-        for (const info of row) {
-          const meal = info.MMEAL_SC_NM;
-          switch (meal) {
-            case "조식":
-              this.morning = this.toArray(this.removeBracket(info.DDISH_NM));
-              break;
-            case "중식":
-              this.lunch = this.toArray(this.removeBracket(info.DDISH_NM));
-              break;
-            case "석식":
-              this.dinner = this.toArray(this.removeBracket(info.DDISH_NM));
-              break;
-          }
-        }
+        this.assignMeals(row);
         if (now.getHours() >= 13) {
           this.meal =
             this.dinner.length > 0
@@ -232,31 +217,36 @@ export default {
     },
     prevMeal() {
       switch (this.timing) {
+        case "":
+          this.notExistNextMeal();
+          break;
         case "조식":
           this.notExistPrevMeal();
           break;
         case "중식":
-          this.morning
+          this.morning.length > 0
             ? ((this.meal = this.morning), (this.timing = "조식"))
             : this.notExistPrevMeal();
           break;
         case "석식":
-          this.lunch
+          this.lunch.length > 0
             ? ((this.meal = this.lunch), (this.timing = "중식"))
             : this.notExistPrevMeal();
           break;
       }
     },
     nextMeal() {
-      console.log(this.dinner);
       switch (this.timing) {
+        case "":
+          this.notExistNextMeal();
+          break;
         case "조식":
-          this.lunch.length
+          this.lunch.length > 0
             ? ((this.meal = this.lunch), (this.timing = "중식"))
             : this.notExistNextMeal();
           break;
         case "중식":
-          this.dinner.length
+          this.dinner.length > 0
             ? ((this.meal = this.dinner), (this.timing = "석식"))
             : this.notExistNextMeal();
           break;
@@ -276,29 +266,14 @@ export default {
     async getNewMeal() {
       try {
         this.isLoading = true;
+        this.initMeals();
         const row = await this.getMealApi();
         this.mealExist = row ? true : false;
-        this.morning = [];
-        this.lunch = [];
-        this.dinner = [];
-        for (const info of row) {
-          const meal = info.MMEAL_SC_NM;
-          switch (meal) {
-            case "조식":
-              this.morning = this.toArray(this.removeBracket(info.DDISH_NM));
-              break;
-            case "중식":
-              this.lunch = this.toArray(this.removeBracket(info.DDISH_NM));
-              break;
-            case "석식":
-              this.dinner = this.toArray(this.removeBracket(info.DDISH_NM));
-              break;
-          }
-        }
+        this.assignMeals(row);
         this.meal =
-          this.morning.length !== 0
+          this.morning.length > 0
             ? this.morning
-            : this.lunch.length !== 0
+            : this.lunch.length > 0
             ? this.lunch
             : this.dinner;
         this.timingAssign();
@@ -335,8 +310,29 @@ export default {
 
         return row;
       } catch (e) {
-        console.log(e);
+        return e;
       }
+    },
+    assignMeals(row) {
+      for (const info of row) {
+        const meal = info.MMEAL_SC_NM;
+        switch (meal) {
+          case "조식":
+            this.morning = this.toArray(this.removeBracket(info.DDISH_NM));
+            break;
+          case "중식":
+            this.lunch = this.toArray(this.removeBracket(info.DDISH_NM));
+            break;
+          case "석식":
+            this.dinner = this.toArray(this.removeBracket(info.DDISH_NM));
+            break;
+        }
+      }
+    },
+    initMeals() {
+      this.morning = [];
+      this.lunch = [];
+      this.dinner = [];
     },
   },
   mounted() {
