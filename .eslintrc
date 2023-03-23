@@ -1,0 +1,7 @@
+{
+  "env": {
+    "node": true,
+    "es2021": true
+  },
+  "extends": ["eslint:recommend", "plugin:vue/vue3-recommended", "prettier"]
+}
