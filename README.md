@@ -1,3 +1,15 @@
 # 스폰지 '밥'
 
-나만 쓰려고 만든 식단표
+## Commands
+
+for test
+
+```zsh
+$ npm dev
+```
+
+for build
+
+```zsh
+$ npm build
+```
