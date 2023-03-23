@@ -120,7 +120,9 @@ export default {
             },
           },
         } = await axios.get(
-          `https://open.neis.go.kr/hub/schoolInfo?KEY=${process.env.VUE_APP_NEIS_API_KEY}&Type=json&SCHUL_NM=${name}`
+          `https://open.neis.go.kr/hub/schoolInfo?KEY=${
+            import.meta.env.VITE_NEIS_API_KEY
+          }&Type=json&SCHUL_NM=${name}`,
         );
         this.schoolList = row;
         this.schoolsNotExist = false;
@@ -305,7 +307,11 @@ export default {
             },
           },
         } = await axios.get(
-          `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${process.env.VUE_APP_NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${this.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${this.SD_SCHUL_CODE}&MLSV_YMD=${this.today}`
+          `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${
+            import.meta.env.VITE_NEIS_API_KEY
+          }&Type=json&ATPT_OFCDC_SC_CODE=${
+            this.ATPT_OFCDC_SC_CODE
+          }&SD_SCHUL_CODE=${this.SD_SCHUL_CODE}&MLSV_YMD=${this.today}`,
         );
 
         return row;
