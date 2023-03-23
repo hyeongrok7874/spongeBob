@@ -13,6 +13,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#FFF75F" />
     <link
       rel="apple-touch-icon"
       sizes="192x192"
@@ -211,17 +212,15 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"
     />
-    <title><%= htmlWebpackPlugin.options.title %></title>
+    <title>sponge-bob</title>
   </head>
   <body>
     <noscript>
-      <strong
-        >We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work
-        properly without JavaScript enabled. Please enable it to
-        continue.</strong
-      >
+      We're sorry but this app doesn't work properly without JavaScript enabled.
+      Please enable it to continue.
     </noscript>
     <div id="app"></div>
     <!-- built files will be auto injected -->
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>
